@@ -1,0 +1,12 @@
+node_modules/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.hf-cache/
+.hf-home/
+.env
+*.tmp
+*.db
+tools/python/runtime/
