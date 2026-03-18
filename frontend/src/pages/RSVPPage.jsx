@@ -21,7 +21,7 @@ function RSVPPage() {
   };
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-2">
+    <main className="section-shell grid gap-8 md:grid-cols-2">
       <section className="panel p-8">
         <p className="text-sm uppercase tracking-[0.3em] text-gold">P2 Bonus</p>
         <h1 className="mt-2 font-display text-4xl text-maroon">Create an RSVP event</h1>

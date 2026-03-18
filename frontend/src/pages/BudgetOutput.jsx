@@ -23,6 +23,17 @@ function BudgetOutput() {
   }, [sessionId]);
 
   const chartData = useMemo(() => Object.values(estimate?.section_totals || {}), [estimate]);
+  const summaryCards = useMemo(() => {
+    if (!estimate) {
+      return [];
+    }
+    return [
+      { label: "Low estimate", value: `Rs ${estimate.grand_total_min.toLocaleString()}` },
+      { label: "High estimate", value: `Rs ${estimate.grand_total_max.toLocaleString()}` },
+      { label: "Functions", value: String(estimate.meta.functions_considered.length) },
+      { label: "Outstation guests", value: String(estimate.meta.outstation_guests) }
+    ];
+  }, [estimate]);
 
   const loadScenario = async (hotelTier) => {
     if (!estimate?.inputs) return;
@@ -51,7 +62,7 @@ function BudgetOutput() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-12">
+    <main className="section-shell">
       <div className="panel p-8">
         <p className="text-sm uppercase tracking-[0.3em] text-gold">Budget Output</p>
         <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -65,6 +76,14 @@ function BudgetOutput() {
             Download PDF
           </button>
         </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          {summaryCards.map((card) => (
+            <div key={card.label} className="metric-card">
+              <p className="text-xs uppercase tracking-[0.28em] text-black/45">{card.label}</p>
+              <p className="mt-3 text-2xl font-semibold text-maroon">{card.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
@@ -76,9 +95,12 @@ function BudgetOutput() {
       </div>
 
       {tab === "summary" && (
-        <section className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <section className="mt-8 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
           <div className="panel p-6">
             <ConfidenceMeter value={estimate.confidence} />
+            <div className="soft-divider mt-4 pt-4 text-sm leading-7 text-black/65">
+              Confidence rises when the event is more tightly specified. Named artists, guest logistics, and a stable decor tier narrow the range.
+            </div>
           </div>
           <div className="panel p-6">
             <BudgetChart data={chartData} />
@@ -90,7 +112,10 @@ function BudgetOutput() {
         <section className="mt-8 space-y-4">
           {Object.entries(estimate.breakdown).map(([key, section]) => (
             <details key={key} className="panel p-5" open={key === "venue"}>
-              <summary className="cursor-pointer list-none font-display text-2xl text-maroon">{section.label}</summary>
+              <summary className="cursor-pointer list-none font-display text-2xl text-maroon">
+                {section.label}
+                <span className="ml-3 text-base text-black/45">Rs {Math.round((section.total_min + section.total_max) / 2).toLocaleString()} mid</span>
+              </summary>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[520px] text-left">
                   <thead>

@@ -36,7 +36,7 @@ function AdminPanel() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-12">
+    <main className="section-shell">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-sm uppercase tracking-[0.3em] text-gold">Admin Control Room</p>
@@ -79,6 +79,35 @@ function AdminPanel() {
             <p>F&B rows loaded: {rates.length}</p>
             <p>Logistics rules loaded: {rules.length}</p>
             <p>Decor images loaded: {decor.length}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-6 xl:grid-cols-2">
+        <div className="panel p-6">
+          <h2 className="font-display text-3xl text-maroon">F&B Rate Grid</h2>
+          <div className="mt-4 space-y-3">
+            {rates.slice(0, 8).map((rate) => (
+              <div key={rate.id} className="flex items-center justify-between rounded-3xl bg-white p-4 text-sm">
+                <div>
+                  <p className="font-semibold text-maroon">{rate.hotel_tier.replaceAll("_", " ")}</p>
+                  <p className="text-black/60">{rate.meal_type.replaceAll("_", " ")}</p>
+                </div>
+                <p className="font-semibold text-black/70">Rs {rate.cost_per_head_min.toLocaleString()} - Rs {rate.cost_per_head_max.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel p-6">
+          <h2 className="font-display text-3xl text-maroon">Logistics Rules</h2>
+          <div className="mt-4 space-y-3">
+            {rules.slice(0, 7).map((rule) => (
+              <div key={rule.id} className="rounded-3xl bg-white p-4 text-sm">
+                <p className="font-semibold capitalize text-maroon">{rule.city}</p>
+                <p className="mt-2 text-black/60">Ghodi: Rs {rule.ghodi_min.toLocaleString()} - Rs {rule.ghodi_max.toLocaleString()}</p>
+                <p className="text-black/60">Innova/day: Rs {rule.innova_per_day_min.toLocaleString()} - Rs {rule.innova_per_day_max.toLocaleString()}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

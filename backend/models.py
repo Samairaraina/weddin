@@ -81,6 +81,18 @@ class BudgetEstimate(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class CachedNarrative(Base):
+    __tablename__ = "cached_narratives"
+
+    id = Column(Integer, primary_key=True)
+    scenario_key = Column(String, unique=True, index=True, nullable=False)
+    hotel_tier = Column(String, nullable=False)
+    narrative = Column(Text, nullable=False)
+    source = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class RSVPEvent(Base):
     __tablename__ = "rsvp_events"
 

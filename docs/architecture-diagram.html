@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeddingBudget.ai Architecture</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1f1720;
+        --maroon: #7a2234;
+        --gold: #b58b38;
+        --paper: #f7f1e8;
+        --sage: #4d6a58;
+        --line: rgba(31, 23, 32, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(181, 139, 56, 0.22), transparent 24%),
+          radial-gradient(circle at 82% 0%, rgba(122, 34, 52, 0.18), transparent 22%),
+          linear-gradient(180deg, #fcf7ef 0%, var(--paper) 100%);
+      }
+
+      .frame {
+        width: 1600px;
+        min-height: 900px;
+        margin: 0 auto;
+        padding: 48px;
+      }
+
+      .title {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 48px;
+        color: var(--maroon);
+      }
+
+      .subtitle {
+        max-width: 560px;
+        font-size: 20px;
+        line-height: 1.5;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr 1fr;
+        gap: 26px;
+        margin-top: 36px;
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      .card {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 22px 24px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 24px 60px rgba(61, 38, 30, 0.08);
+      }
+
+      .card::after {
+        content: "";
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        top: 0;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--maroon), var(--gold));
+      }
+
+      .card h2 {
+        margin: 8px 0 10px;
+        font-size: 26px;
+        color: var(--maroon);
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+        line-height: 1.7;
+        font-size: 18px;
+      }
+
+      .band {
+        margin-top: 26px;
+        border-radius: 28px;
+        padding: 22px 28px;
+        background: rgba(122, 34, 52, 0.94);
+        color: white;
+      }
+
+      .band h3 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-top: 26px;
+      }
+
+      .flow-step {
+        border-radius: 24px;
+        padding: 18px 20px;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid var(--line);
+        position: relative;
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 19px;
+        color: var(--maroon);
+      }
+
+      .arrow {
+        position: absolute;
+        top: 50%;
+        right: -12px;
+        width: 24px;
+        height: 2px;
+        background: var(--gold);
+      }
+
+      .arrow::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: -4px;
+        border-left: 8px solid var(--gold);
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+      }
+
+      .flow-step:last-child .arrow {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="frame">
+      <section class="title">
+        <div>
+          <div class="eyebrow">Architecture Snapshot</div>
+          <h1>WeddingBudget.ai Demo System</h1>
+        </div>
+        <div class="subtitle">
+          Frontend wizard + decor library on Vercel, FastAPI budget engine on Railway, SQLite persistence, and pre-seeded decor/narrative data to remove live CLIP and Gemini risk during judging.
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="column">
+          <div class="card">
+            <div class="eyebrow">Experience Layer</div>
+            <h2>Frontend</h2>
+            <ul>
+              <li>React + Vite single-page app</li>
+              <li>Wizard, budget dashboard, decor library, RSVP, admin</li>
+              <li>`VITE_API_URL` points all hosted traffic to Railway</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="eyebrow">Output Layer</div>
+            <h2>Deliverables</h2>
+            <ul>
+              <li>Budget range with section breakdowns</li>
+              <li>Scenario compare across hotel tiers</li>
+              <li>Planner narrative and PDF export</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card">
+            <div class="eyebrow">API Layer</div>
+            <h2>FastAPI Backend</h2>
+            <ul>
+              <li>`/api/budget/*` for estimates, narratives, PDF</li>
+              <li>`/api/decor/*` for library and cost prediction</li>
+              <li>`/ping` health route for Railway checks</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="eyebrow">Data Layer</div>
+            <h2>SQLite Store</h2>
+            <ul>
+              <li>Budget sessions and saved narratives</li>
+              <li>Decor images with stored 512-d embeddings</li>
+              <li>Artist, logistics, and F&amp;B seed tables</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card">
+            <div class="eyebrow">Demo Safety</div>
+            <h2>Pre-Seeded Intelligence</h2>
+            <ul>
+              <li>400 Unsplash decor images embedded ahead of time</li>
+              <li>No live CLIP fetch required during decor prediction</li>
+              <li>5 cached narratives unlocked by `USE_CACHED_NARRATIVE=true`</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="eyebrow">Optional Live Services</div>
+            <h2>External Integrations</h2>
+            <ul>
+              <li>Unsplash only for the one-time seeding job</li>
+              <li>Gemini only when cached narratives are being generated</li>
+              <li>Hosted demo path can run without both once cached</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <h3>Runtime flow</h3>
+        <div class="flow">
+          <div class="flow-step">
+            <strong>1. Wizard submit</strong>
+            Vercel app sends normalized inputs to Railway FastAPI.
+            <span class="arrow"></span>
+          </div>
+          <div class="flow-step">
+            <strong>2. Budget engine</strong>
+            FastAPI combines formulas with SQLite seed data and stores a session.
+            <span class="arrow"></span>
+          </div>
+          <div class="flow-step">
+            <strong>3. Decor predict</strong>
+            Existing embedding is loaded from SQLite and passed to the cost model.
+            <span class="arrow"></span>
+          </div>
+          <div class="flow-step">
+            <strong>4. Output</strong>
+            Frontend renders tabs, narrative, and downloadable PDF.
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

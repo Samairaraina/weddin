@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from models import ArtistCost, BudgetEstimate, FBRate, LogisticsRule, get_db
+from models import ArtistCost, BudgetEstimate, CachedNarrative, FBRate, LogisticsRule, get_db
 from utils.pdf_generator import generate_budget_pdf
 
 router = APIRouter()
@@ -56,6 +56,39 @@ def _range(min_value: float, max_value: float, note: str | None = None) -> dict[
 
 def _section(label: str, items: dict[str, dict[str, Any]]) -> dict[str, Any]:
     return {"label": label, "items": items, "total_min": sum(item["min"] for item in items.values()), "total_max": sum(item["max"] for item in items.values())}
+
+
+def _truthy_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _scenario_key(inputs: dict[str, Any]) -> str:
+    return f"hotel_tier:{inputs['hotel_tier']}"
+
+
+def _get_cached_narrative(db: Session, inputs: dict[str, Any]) -> CachedNarrative | None:
+    return db.query(CachedNarrative).filter(CachedNarrative.scenario_key == _scenario_key(inputs)).first()
+
+
+def _upsert_cached_narrative(db: Session, inputs: dict[str, Any], narrative: str, source: str) -> CachedNarrative:
+    cached = _get_cached_narrative(db, inputs)
+    if cached:
+        cached.narrative = narrative
+        cached.source = source
+        cached.hotel_tier = inputs["hotel_tier"]
+        return cached
+
+    cached = CachedNarrative(
+        scenario_key=_scenario_key(inputs),
+        hotel_tier=inputs["hotel_tier"],
+        narrative=narrative,
+        source=source,
+    )
+    db.add(cached)
+    return cached
 
 
 def calculate_budget(inp: WeddingInput, db: Session) -> dict[str, Any]:
@@ -149,12 +182,18 @@ async def generate_narrative_text(estimate: BudgetEstimate) -> str:
 @router.post("/estimate")
 def create_estimate(payload: WeddingInput, db: Session = Depends(get_db)):
     outputs = calculate_budget(payload, db)
-    estimate = BudgetEstimate(inputs=json.dumps(payload.model_dump()), outputs=json.dumps(outputs))
+    cached = _get_cached_narrative(db, payload.model_dump()) if _truthy_env("USE_CACHED_NARRATIVE") else None
+    estimate = BudgetEstimate(
+        inputs=json.dumps(payload.model_dump()),
+        outputs=json.dumps(outputs),
+        ai_narrative=cached.narrative if cached else None,
+    )
     db.add(estimate)
     db.commit()
     db.refresh(estimate)
     outputs["session_id"] = estimate.session_id
     outputs["estimate_id"] = estimate.id
+    outputs["ai_narrative"] = estimate.ai_narrative
     return outputs
 
 
@@ -175,7 +214,14 @@ async def create_narrative(session_id: str, db: Session = Depends(get_db)):
     estimate = db.query(BudgetEstimate).filter(BudgetEstimate.session_id == session_id).first()
     if not estimate:
         raise HTTPException(status_code=404, detail="Estimate not found")
-    narrative = await generate_narrative_text(estimate)
+    inputs = json.loads(estimate.inputs)
+    cached = _get_cached_narrative(db, inputs)
+    if _truthy_env("USE_CACHED_NARRATIVE") and cached:
+        narrative = cached.narrative
+    else:
+        narrative = await generate_narrative_text(estimate)
+        source = "gemini" if os.getenv("GEMINI_API_KEY") else "fallback"
+        _upsert_cached_narrative(db, inputs, narrative, source)
     estimate.ai_narrative = narrative
     db.commit()
     return {"session_id": session_id, "narrative": narrative}

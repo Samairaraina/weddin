@@ -3,16 +3,39 @@
 @tailwind utilities;
 
 :root {
-  color: #1f1a17;
+  color: #241718;
   background:
-    radial-gradient(circle at top left, rgba(181, 139, 56, 0.2), transparent 30%),
-    radial-gradient(circle at top right, rgba(122, 34, 52, 0.18), transparent 28%),
-    linear-gradient(180deg, #fbf5ec 0%, #f5ede1 100%);
-  font-family: "Trebuchet MS", sans-serif;
+    radial-gradient(circle at top left, rgba(194, 146, 63, 0.22), transparent 24%),
+    radial-gradient(circle at 85% 10%, rgba(111, 29, 54, 0.22), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(74, 100, 84, 0.12), transparent 35%),
+    linear-gradient(180deg, #f8f0e4 0%, #f3eadf 32%, #f7f2e9 100%);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(122, 34, 52, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(181, 139, 56, 0.04) 1px, transparent 1px);
+  background-size: 120px 120px;
+  mask-image: radial-gradient(circle at center, black 25%, transparent 90%);
 }
 
 a {
@@ -20,18 +43,60 @@ a {
   text-decoration: none;
 }
 
+.section-shell {
+  @apply mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16;
+}
+
 .panel {
-  @apply rounded-[28px] border border-white/60 bg-white/80 shadow-luxe backdrop-blur;
+  @apply rounded-[30px] border border-white/70 bg-white/75 shadow-luxe backdrop-blur-xl;
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-full bg-maroon px-5 py-3 font-semibold text-white transition hover:opacity-90;
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-maroon px-5 py-3 font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:opacity-95;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-full border border-maroon/20 bg-white px-5 py-3 font-semibold text-maroon transition hover:border-maroon/40;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-maroon/20 bg-white/90 px-5 py-3 font-semibold text-maroon transition duration-200 hover:-translate-y-0.5 hover:border-maroon/40;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-transparent px-4 py-2.5 font-semibold text-ink transition duration-200 hover:border-black/20 hover:bg-white/60;
 }
 
 .field {
-  @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-gold;
+  @apply w-full rounded-2xl border border-black/10 bg-white/95 px-4 py-3 text-ink outline-none transition duration-200 placeholder:text-black/35 focus:border-gold focus:ring-2 focus:ring-gold/20;
+}
+
+.field-label {
+  @apply mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-black/45;
+}
+
+.metric-card {
+  @apply rounded-[28px] border border-white/80 bg-white/70 p-5 shadow-luxe;
+}
+
+.glass-band {
+  @apply rounded-[32px] border border-white/80 bg-white/50 backdrop-blur-xl;
+}
+
+.soft-divider {
+  @apply border-t border-black/5;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(12px);
+  opacity: 0.65;
+}
+
+.luxury-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.stat-value {
+  @apply font-display text-4xl text-maroon md:text-5xl;
 }

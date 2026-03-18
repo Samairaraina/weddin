@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ml.embedder import embed_image_from_url
+from ml.embedder import deterministic_embedding, embed_image_from_url
 from ml.predictor import predict_cost
 from models import DecorImage, get_db
 from utils.scraper import fetch_unsplash_images
@@ -73,7 +73,7 @@ async def predict_decor_cost(image_id: int, db: Session = Depends(get_db)):
     image = db.query(DecorImage).filter(DecorImage.id == image_id).first()
     if not image:
         raise HTTPException(status_code=404, detail="Decor image not found")
-    embedding = json.loads(image.embedding) if image.embedding else await embed_image_from_url(image.url)
+    embedding = json.loads(image.embedding) if image.embedding else deterministic_embedding(image.url)
     if not image.embedding:
         image.embedding = json.dumps(embedding)
         db.commit()

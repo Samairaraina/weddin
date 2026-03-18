@@ -1,6 +1,6 @@
 function DecorCard({ image, selected, onToggle, onPredict }) {
   return (
-    <article className="panel overflow-hidden">
+    <article className="panel overflow-hidden transition duration-200 hover:-translate-y-1">
       <img src={image.thumbnail_url} alt={image.function_type || "Decor inspiration"} className="h-56 w-full object-cover" />
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide">

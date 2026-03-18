@@ -32,7 +32,7 @@ def _load_model():
     return CLIPModel.from_pretrained(MODEL_NAME), CLIPProcessor.from_pretrained(MODEL_NAME)
 
 
-def _fallback_embedding(seed: str) -> list[float]:
+def deterministic_embedding(seed: str) -> list[float]:
     values = []
     for idx in range(512):
         digest = hashlib.sha256(f"{seed}:{idx}".encode("utf-8")).digest()
@@ -45,7 +45,7 @@ def _fallback_embedding(seed: str) -> list[float]:
 async def embed_image_from_url(url: str) -> list[float]:
     model, processor = _load_model()
     if model is None or processor is None or torch is None:
-        return _fallback_embedding(url)
+        return deterministic_embedding(url)
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, timeout=20)
