@@ -3,6 +3,28 @@ import axios from "axios";
 const BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const api = axios.create({ baseURL: BASE });
 
+export function describeApiError(error) {
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length) {
+    return detail.map((item) => item?.msg || JSON.stringify(item)).join(", ");
+  }
+
+  if (error?.message === "Network Error") {
+    const target = BASE || "the current site";
+    const isRemotePage = typeof window !== "undefined" && !["localhost", "127.0.0.1"].includes(window.location.hostname);
+    if (BASE.includes("localhost") && isRemotePage) {
+      return `Could not reach the backend at ${BASE}. Replace VITE_API_BASE with your deployed backend URL instead of localhost.`;
+    }
+    return `Could not reach the backend at ${target}. Make sure the API server is running and publicly reachable.`;
+  }
+
+  return error?.message || "Unexpected error while calling the API.";
+}
+
 export const estimateBudget = (data) => api.post("/api/budget/estimate", data);
 export const getBudgetById = (id) => api.get(`/api/budget/estimate/${id}`);
 export const getNarrative = (id) => api.post(`/api/budget/narrative/${id}`);

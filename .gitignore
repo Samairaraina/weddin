@@ -7,6 +7,8 @@ __pycache__/
 .hf-cache/
 .hf-home/
 .env
+.env.*
+!.env.example
 *.tmp
 *.db
 tools/python/runtime/

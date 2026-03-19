@@ -1,11 +1,18 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 from models import init_db
 from routers import admin, artists, budget, decor, logistics, rsvp
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
+
+# Support local `.env` files while keeping deployed environment variables authoritative.
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(BASE_DIR / ".env")
 
 app = FastAPI(title="WeddingBudget.ai API", version="1.0.0")
 
@@ -36,11 +43,6 @@ async def startup() -> None:
 @app.get("/")
 async def root() -> dict[str, str]:
     return {"message": "WeddingBudget.ai API is running"}
-
-
-@app.get("/ping")
-async def ping() -> dict[str, str]:
-    return {"status": "ok"}
 
 
 if __name__ == "__main__":

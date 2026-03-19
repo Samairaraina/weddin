@@ -2,7 +2,7 @@ import { CalendarDays, Camera, Crown, Martini, MapPin, Music4, Sparkles, Users }
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { estimateBudget, getArtists } from "../api";
+import { describeApiError, estimateBudget, getArtists } from "../api";
 import WizardStep from "../components/WizardStep";
 
 const cities = ["udaipur", "jaipur", "mumbai", "delhi", "goa", "jodhpur", "hyderabad"];
@@ -110,8 +110,8 @@ function Wizard() {
     try {
       const response = await estimateBudget(form);
       navigate(`/budget/${response.data.session_id}`);
-    } catch {
-      setError("Could not generate estimate. Please try again.");
+    } catch (error) {
+      setError(describeApiError(error));
     } finally {
       setLoading(false);
     }

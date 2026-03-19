@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { downloadPDF, estimateBudget, getBudgetById, getNarrative } from "../api";
+import { describeApiError, downloadPDF, estimateBudget, getBudgetById, getNarrative } from "../api";
 import BudgetChart from "../components/BudgetChart";
 import ConfidenceMeter from "../components/ConfidenceMeter";
 import NarrativeBox from "../components/NarrativeBox";
@@ -14,12 +14,18 @@ function BudgetOutput() {
   const [narrative, setNarrative] = useState("");
   const [tab, setTab] = useState("summary");
   const [loadingNarrative, setLoadingNarrative] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getBudgetById(sessionId).then((response) => {
-      setEstimate(response.data);
-      setNarrative(response.data.ai_narrative || "");
-    });
+    getBudgetById(sessionId)
+      .then((response) => {
+        setEstimate(response.data);
+        setNarrative(response.data.ai_narrative || "");
+        setError("");
+      })
+      .catch((loadError) => {
+        setError(describeApiError(loadError));
+      });
   }, [sessionId]);
 
   const chartData = useMemo(() => Object.values(estimate?.section_totals || {}), [estimate]);
@@ -58,7 +64,7 @@ function BudgetOutput() {
   };
 
   if (!estimate) {
-    return <main className="mx-auto max-w-6xl px-4 py-20">Loading estimate...</main>;
+    return <main className="mx-auto max-w-6xl px-4 py-20">{error || "Loading estimate..."}</main>;
   }
 
   return (
