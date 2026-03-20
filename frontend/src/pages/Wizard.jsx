@@ -109,6 +109,7 @@ function Wizard() {
     setError("");
     try {
       const response = await estimateBudget(form);
+      localStorage.setItem(`budget_${response.data.session_id}`, JSON.stringify(response.data));
       navigate(`/budget/${response.data.session_id}`);
     } catch (error) {
       setError(describeApiError(error));

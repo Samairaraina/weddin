@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { calculateBudget, generateNarrative } from "../budgetEngine";
+import { describeApiError, getBudgetById } from "../api";
 import BudgetChart from "../components/BudgetChart";
 import ConfidenceMeter from "../components/ConfidenceMeter";
 import NarrativeBox from "../components/NarrativeBox";
@@ -17,19 +18,44 @@ function BudgetOutput() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(`budget_${sessionId}`);
-      if (stored) {
-        const data = JSON.parse(stored);
-        setEstimate(data);
-        setNarrative(data.ai_narrative || "");
-        setError("");
-      } else {
-        setError("Budget not found. Please go back and generate a new estimate.");
+    let cancelled = false;
+
+    const loadEstimate = async () => {
+      try {
+        const stored = localStorage.getItem(`budget_${sessionId}`);
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (!cancelled) {
+            setEstimate(data);
+            setNarrative(data.ai_narrative || "");
+            setError("");
+          }
+          return;
+        }
+      } catch {
+        localStorage.removeItem(`budget_${sessionId}`);
       }
-    } catch (loadError) {
-      setError("Could not load the saved budget.");
-    }
+
+      try {
+        const response = await getBudgetById(sessionId);
+        localStorage.setItem(`budget_${sessionId}`, JSON.stringify(response.data));
+        if (!cancelled) {
+          setEstimate(response.data);
+          setNarrative(response.data.ai_narrative || "");
+          setError("");
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(describeApiError(loadError) || "Budget not found. Please go back and generate a new estimate.");
+        }
+      }
+    };
+
+    loadEstimate();
+
+    return () => {
+      cancelled = true;
+    };
   }, [sessionId]);
 
   const chartData = useMemo(() => Object.values(estimate?.section_totals || {}), [estimate]);
