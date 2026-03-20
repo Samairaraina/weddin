@@ -1,6 +1,6 @@
 # WeddingBudget.ai
 
-WeddingBudget.ai is a hackathon-ready planning platform for luxury Indian weddings. It combines a FastAPI budget engine, a React dashboard, decor intelligence hooks, PDF export, and a bonus RSVP workflow.
+WeddingBudget.ai is a hackathon and production ready planning platform for luxury Indian weddings. It combines a FastAPI budget engine, a React dashboard, decor intelligence hooks, PDF export, and a bonus RSVP workflow.
 
 ## Stack
 
