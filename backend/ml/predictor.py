@@ -5,7 +5,6 @@ import pickle
 from pathlib import Path
 
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
 
 from models import DecorImage, SessionLocal
 
@@ -15,6 +14,8 @@ MODEL_MAX = MODEL_DIR / "model_max.pkl"
 
 
 def train_cost_model() -> dict:
+    from sklearn.ensemble import RandomForestRegressor
+
     db = SessionLocal()
     try:
         labelled = db.query(DecorImage).filter(DecorImage.is_labelled.is_(True), DecorImage.embedding.isnot(None)).all()

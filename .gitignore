@@ -12,3 +12,5 @@ __pycache__/
 *.tmp
 *.db
 tools/python/runtime/
+.vercel
+.env*.local

@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ml.predictor import train_cost_model
 from models import ArtistCost, DecorImage, FBRate, LogisticsRule, get_db
 
 router = APIRouter()
@@ -93,4 +92,6 @@ def admin_decor(db: Session = Depends(get_db)):
 
 @router.post("/train")
 def train_model():
+    from ml.predictor import train_cost_model
+
     return train_cost_model()

@@ -6,8 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ml.embedder import deterministic_embedding, embed_image_from_url
-from ml.predictor import predict_cost
 from models import DecorImage, get_db
 from utils.scraper import fetch_unsplash_images
 
@@ -53,6 +51,8 @@ async def scrape_decor(function_type: str, db: Session = Depends(get_db)):
 
 @router.patch("/label/{image_id}")
 async def label_image(image_id: int, payload: DecorLabelUpdate, db: Session = Depends(get_db)):
+    from ml.embedder import embed_image_from_url
+
     image = db.query(DecorImage).filter(DecorImage.id == image_id).first()
     if not image:
         raise HTTPException(status_code=404, detail="Decor image not found")
@@ -70,6 +70,9 @@ async def label_image(image_id: int, payload: DecorLabelUpdate, db: Session = De
 
 @router.post("/predict/{image_id}")
 async def predict_decor_cost(image_id: int, db: Session = Depends(get_db)):
+    from ml.embedder import deterministic_embedding
+    from ml.predictor import predict_cost
+
     image = db.query(DecorImage).filter(DecorImage.id == image_id).first()
     if not image:
         raise HTTPException(status_code=404, detail="Decor image not found")
