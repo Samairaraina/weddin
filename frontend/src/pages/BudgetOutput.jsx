@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { describeApiError, downloadPDF, estimateBudget, getBudgetById, getNarrative } from "../api";
+import { calculateBudget, generateNarrative } from "../budgetEngine";
 import BudgetChart from "../components/BudgetChart";
 import ConfidenceMeter from "../components/ConfidenceMeter";
 import NarrativeBox from "../components/NarrativeBox";
@@ -17,15 +17,19 @@ function BudgetOutput() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getBudgetById(sessionId)
-      .then((response) => {
-        setEstimate(response.data);
-        setNarrative(response.data.ai_narrative || "");
+    try {
+      const stored = localStorage.getItem(`budget_${sessionId}`);
+      if (stored) {
+        const data = JSON.parse(stored);
+        setEstimate(data);
+        setNarrative(data.ai_narrative || "");
         setError("");
-      })
-      .catch((loadError) => {
-        setError(describeApiError(loadError));
-      });
+      } else {
+        setError("Budget not found. Please go back and generate a new estimate.");
+      }
+    } catch (loadError) {
+      setError("Could not load the saved budget.");
+    }
   }, [sessionId]);
 
   const chartData = useMemo(() => Object.values(estimate?.section_totals || {}), [estimate]);
@@ -41,26 +45,41 @@ function BudgetOutput() {
     ];
   }, [estimate]);
 
-  const loadScenario = async (hotelTier) => {
+  const loadScenario = (hotelTier) => {
     if (!estimate?.inputs) return;
-    const response = await estimateBudget({ ...estimate.inputs, hotel_tier: hotelTier });
-    setAltEstimate(response.data);
+    try {
+      const result = calculateBudget({ ...estimate.inputs, hotel_tier: hotelTier });
+      setAltEstimate(result);
+    } catch {
+      /* ignore */
+    }
   };
 
-  const handleNarrative = async () => {
+  const handleNarrative = () => {
     setLoadingNarrative(true);
     try {
-      const response = await getNarrative(sessionId);
-      setNarrative(response.data.narrative);
+      const text = generateNarrative(estimate);
+      setNarrative(text);
     } finally {
       setLoadingNarrative(false);
     }
   };
 
-  const handlePDF = async () => {
-    const response = await downloadPDF(sessionId);
-    const url = URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-    window.open(url, "_blank");
+  const handlePDF = () => {
+    // Build a simple printable view and trigger browser print
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const minL = (estimate.grand_total_min / 100000).toFixed(1);
+    const maxL = (estimate.grand_total_max / 100000).toFixed(1);
+    let rows = "";
+    for (const [, section] of Object.entries(estimate.breakdown)) {
+      rows += `<tr style="background:#f9f4ef"><td colspan="4" style="padding:10px;font-weight:bold;font-size:16px">${section.label}</td></tr>`;
+      for (const [itemKey, item] of Object.entries(section.items)) {
+        rows += `<tr><td style="padding:6px 10px">${item.note || itemKey}</td><td style="padding:6px 10px">Rs ${item.min.toLocaleString()}</td><td style="padding:6px 10px">Rs ${Math.round((item.min + item.max) / 2).toLocaleString()}</td><td style="padding:6px 10px">Rs ${item.max.toLocaleString()}</td></tr>`;
+      }
+    }
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Wedding Budget</title><style>body{font-family:Georgia,serif;max-width:800px;margin:auto;padding:40px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #eee;text-align:left}h1{color:#6b1d2a}</style></head><body><h1>Wedding Budget Estimate</h1><p>Range: Rs ${minL}L – Rs ${maxL}L | Confidence: ${estimate.confidence}%</p><table><thead><tr><th>Item</th><th>Low</th><th>Mid</th><th>High</th></tr></thead><tbody>${rows}</tbody></table><script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+    printWindow.document.close();
   };
 
   if (!estimate) {
